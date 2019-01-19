@@ -1,44 +1,28 @@
-import twitterApp.constants
-import oauth2
-import urllib.parse as urlparse
-import json
+from twitterApp.user import User
+from twitterApp.database import Database
+from twitterApp.twitter_utils import get_request_token, get_oauth_verifier, get_access_token
 
-consumer = oauth2.Consumer(twitterApp.constants.CONSUMER_KEY, twitterApp.constants.CONSUMER_SECRET)
-client = oauth2.Client(consumer)
+Database.initialise(user='postgres', password='1234', host='localhost', database='Learning')
 
+user_email = input("Enter your e-mail address: ")
 
-response, content = client.request(twitterApp.constants.REQUEST_TOKEN_URL, 'POST')
-if response.status != 200:
-    print("An error occurred getting the response from Twitter")
+user = User.load_from_db_by_email(user_email)
 
+if not user:
+    request_token = get_request_token()
 
-request_token = dict(urlparse.parse_qsl(content.decode('utf-8')))
+    oauth_verifier = get_oauth_verifier(request_token)
 
-print("Go to the following site in your browser")
-print("{}?oauth_token={}".format(twitterApp.constants.AUTHORIZATION_URL, request_token['oauth_token']))
+    access_token = get_access_token(request_token, oauth_verifier)
 
+    first_name = input("Enter your first name: ")
+    last_name = input("Enter your last name: ")
 
-oauth_verifier = input("Enter the PIN")
-
-token = oauth2.Token(request_token['oauth_token'], request_token['oauth_token_secret'])
-token.set_verifier(oauth_verifier)
-client = oauth2.Client(consumer, token)
+    user = User(user_email, first_name, last_name, access_token['oauth_token'], access_token['oauth_token_secret'], None)
+    user.save_to_db()
 
 
-response, content = client.request(twitterApp.constants.ACCESS_TOKEN_URL, 'POST')
-access_token = dict(urlparse.parse_qsl(content.decode('utf-8')))
-
-print(access_token)
-
-authorized_token = oauth2.Token(access_token['oauth_token'], access_token['oauth_token_secret'])
-authorized_client = oauth2.Client(consumer, authorized_token)
-
-response, content = authorized_client.request('https://api.twitter.com/1.1/search/tweets.json?q=computers+filter:images', 'GET')
-if response.status != 200:
-    print("An error occurred when searching")
-
-tweets = json.loads(content.decode('utf-8'))
+tweets = user.twitter_request('https://api.twitter.com/1.1/search/tweets.json?q=computers+filter:images')
 
 for tweet in tweets['statuses']:
     print(tweet['text'])
-
