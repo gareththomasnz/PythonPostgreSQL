@@ -6,6 +6,7 @@ Database.initialise(user='postgres', password='1234', host='localhost', database
 
 user_email = input("Enter your e-mail address: ")
 
+# not in the user file
 user = User.load_from_db_by_email(user_email)
 
 if not user:
