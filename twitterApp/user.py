@@ -4,6 +4,7 @@ import json
 from twitterApp.twitter_utils import consumer
 
 
+
 class User:
     def __init__(self, screen_name, oauth_token, oauth_token_secret, id):
         self.screen_name = screen_name
@@ -27,6 +28,8 @@ class User:
             if user_data:
                 return cls(screen_name=user_data[1], oauth_token=user_data[2],
                            oauth_token_secret=user_data[3], id=user_data[0])
+
+
 
     def twitter_request(self, uri, verb='GET'):
         authorized_token = oauth2.Token(self.oauth_token, self.oauth_token_secret)

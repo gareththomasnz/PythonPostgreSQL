@@ -1,14 +1,14 @@
 import oauth2
-import constants
+import twitterApp.constants
 import urllib.parse as urlparse
 
-consumer = oauth2.Consumer(constants.CONSUMER_KEY, constants.CONSUMER_SECRET)
+consumer = oauth2.Consumer(twitterApp.constants.CONSUMER_KEY, twitterApp.constants.CONSUMER_SECRET)
 
 
 def get_request_token():
     client = oauth2.Client(consumer)
 
-    response, content = client.request(constants.REQUEST_TOKEN_URL, 'POST')
+    response, content = client.request(twitterApp.constants.REQUEST_TOKEN_URL, 'POST')
     if response.status != 200:
         print("An error occurred getting the request token from Twitter!")
 
@@ -23,7 +23,7 @@ def get_oauth_verifier(request_token):
 
 
 def get_oauth_verifier_url(request_token):
-    return "{}?oauth_token={}".format(constants.AUTHORIZATION_URL, request_token['oauth_token'])
+    return "{}?oauth_token={}".format(twitterApp.constants.AUTHORIZATION_URL, request_token['oauth_token'])
 
 
 def get_access_token(request_token, oauth_verifier):
@@ -32,5 +32,7 @@ def get_access_token(request_token, oauth_verifier):
 
     client = oauth2.Client(consumer, token)
 
-    response, content = client.request(constants.ACCESS_TOKEN_URL, 'POST')
+    response, content = client.request(twitterApp.constants.ACCESS_TOKEN_URL, 'POST')
     return dict(urlparse.parse_qsl(content.decode('utf-8')))
+
+
